@@ -78,7 +78,12 @@ export default function CollectionView({ collectionId }) {
     reader.readAsText(file, 'utf-8');
   }
 
-  const filterableFields = col.fields.filter(f => f.filterable && f.type === 'select');
+  const filterableFields = col.fields.filter(f => f.filterable && (f.type === 'select' || f.filterType === 'dynamic'));
+
+  function getOptions(f) {
+    if (f.type === 'select') return f.options;
+    return [...new Set(items.map(i => i[f.key]).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -162,7 +167,7 @@ export default function CollectionView({ collectionId }) {
             onChange={e => setFilters(prev => ({ ...prev, [f.key]: e.target.value }))}
           >
             <option value="">{f.label}</option>
-            {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+            {getOptions(f).map(o => <option key={o} value={o}>{o}</option>)}
           </select>
         ))}
         {(search || Object.values(filters).some(Boolean)) && (

@@ -5,7 +5,7 @@ export const COLLECTIONS = {
     owner: 'Ayelen',
     emoji: null,
     fields: [
-      { key: 'artist',    label: 'Artista',   type: 'text',   required: true, filterable: true },
+      { key: 'artist',    label: 'Artista',   type: 'text',   required: true, filterable: true, filterType: 'dynamic' },
       { key: 'album',     label: 'Álbum',     type: 'text',   required: true, filterable: true },
       { key: 'year',      label: 'Año',       type: 'number', required: false, filterable: true },
       { key: 'genre',     label: 'Género',    type: 'select', required: false, filterable: true,
@@ -14,7 +14,7 @@ export const COLLECTIONS = {
       { key: 'label',     label: 'Sello',     type: 'text',   required: false, filterable: false },
       { key: 'format',    label: 'Formato',   type: 'select', required: false, filterable: true,
         options: ['LP (33 rpm)', 'EP', 'Single (45 rpm)', '78 rpm', 'Picture Disc', 'Colored'] },
-      { key: 'condition', label: 'Estado',    type: 'select', required: false, filterable: true,
+      { key: 'condition', label: 'Estado',    type: 'select', required: false, filterable: false,
         options: ['Mint', 'Good', 'Fair', 'Poor'] },
       { key: 'notes',     label: 'Notas',     type: 'text',   required: false, filterable: false },
     ],
