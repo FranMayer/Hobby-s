@@ -82,7 +82,10 @@ export default function CollectionView({ collectionId }) {
 
   function getOptions(f) {
     if (f.type === 'select') return f.options;
-    return [...new Set(items.map(i => i[f.key]).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    const unique = [...new Set(items.map(i => i[f.key]).filter(Boolean))];
+    return f.type === 'number'
+      ? unique.sort((a, b) => b - a)
+      : unique.sort((a, b) => String(a).localeCompare(String(b)));
   }
 
   const filtered = useMemo(() => {
@@ -95,7 +98,7 @@ export default function CollectionView({ collectionId }) {
         if (!haystack.includes(q)) return false;
       }
       for (const [key, val] of Object.entries(filters)) {
-        if (val && item[key] !== val) return false;
+        if (val && String(item[key]) !== String(val)) return false;
       }
       return true;
     });
