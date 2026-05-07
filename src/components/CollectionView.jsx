@@ -22,10 +22,20 @@ export default function CollectionView({ collectionId }) {
   const [importStatus, setImportStatus] = useState(null);
   const fileRef = useRef();
 
+  function applySort(data) {
+    const { defaultSort } = col;
+    if (!defaultSort) return data;
+    return [...data].sort((a, b) => {
+      const va = (a[defaultSort.key] ?? '').toString().toLowerCase();
+      const vb = (b[defaultSort.key] ?? '').toString().toLowerCase();
+      return defaultSort.asc ? va.localeCompare(vb) : vb.localeCompare(va);
+    });
+  }
+
   async function refresh() {
     setLoading(true);
     try {
-      setItems(await getCollection(collectionId));
+      setItems(applySort(await getCollection(collectionId)));
     } finally {
       setLoading(false);
     }

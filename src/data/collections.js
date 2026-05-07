@@ -19,6 +19,7 @@ export const COLLECTIONS = {
       { key: 'notes',     label: 'Notas',     type: 'text',   required: false, filterable: false },
     ],
     tableColumns: ['artist', 'album', 'year', 'genre', 'country', 'condition'],
+    defaultSort: { key: 'artist', asc: true },
   },
   camaras: {
     id: 'camaras',
