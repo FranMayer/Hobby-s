@@ -31,10 +31,19 @@ export default function Dashboard({ onNavigate }) {
     ])
   );
 
-  const totalOwned = Object.values(stats).reduce((s, v) => s + v.owned, 0);
   const totalWishlist = Object.values(stats).reduce((s, v) => s + v.wishlist, 0);
 
   const byOwner = { Ayelen: ['vinilos', 'camaras'], Franco: ['autosf1', 'monedas'] };
+
+  const ownerStats = Object.fromEntries(
+    Object.entries(byOwner).map(([owner, ids]) => [
+      owner,
+      {
+        owned:    ids.reduce((s, id) => s + (stats[id]?.owned ?? 0), 0),
+        wishlist: ids.reduce((s, id) => s + (stats[id]?.wishlist ?? 0), 0),
+      },
+    ])
+  );
 
   if (loading) {
     return (
@@ -54,19 +63,33 @@ export default function Dashboard({ onNavigate }) {
               {migrationMsg}
             </div>
           )}
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-disabled)', marginBottom: 8 }}>
-            En posesión
+          <div style={{ display: 'flex', gap: 'var(--space-2xl)', flexWrap: 'wrap' }}>
+            {Object.entries(ownerStats).map(([owner, s]) => (
+              <div key={owner}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-disabled)', marginBottom: 4 }}>
+                  {owner}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 96, lineHeight: 1, letterSpacing: '-0.03em', color: 'var(--text-display)' }}>
+                    {s.owned}
+                  </span>
+                  {s.wishlist > 0 && (
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--warning)' }}>
+                      +{s.wishlist}
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-disabled)', marginTop: 4 }}>
+                  items
+                </div>
+              </div>
+            ))}
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 16 }}>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 96, lineHeight: 1, letterSpacing: '-0.03em', color: 'var(--text-display)' }}>
-              {totalOwned}
-            </span>
-            {totalWishlist > 0 && (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--warning)' }}>
-                + {totalWishlist} deseados
-              </span>
-            )}
-          </div>
+          {totalWishlist > 0 && (
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--warning)', marginTop: 8 }}>
+              {totalWishlist} deseados en total
+            </div>
+          )}
         </div>
         <button className="btn btn-secondary btn-sm" onClick={() => exportAll(all)}>
           <Download size={13} /> Exportar Todo
