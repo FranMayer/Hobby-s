@@ -1,9 +1,11 @@
+import { Disc3, Camera, Flag, Coins } from 'lucide-react';
+
 export const COLLECTIONS = {
   vinilos: {
     id: 'vinilos',
     label: 'Vinilos',
     owner: 'Ayelen',
-    emoji: null,
+    icon: Disc3,
     fields: [
       { key: 'artist',    label: 'Artista',   type: 'text',   required: true, filterable: true, filterType: 'dynamic' },
       { key: 'album',     label: 'Álbum',     type: 'text',   required: true, filterable: true },
@@ -22,6 +24,7 @@ export const COLLECTIONS = {
     id: 'camaras',
     label: 'Cámaras',
     owner: 'Ayelen',
+    icon: Camera,
     fields: [
       { key: 'brand',     label: 'Marca',     type: 'text',   required: true,  filterable: true },
       { key: 'model',     label: 'Modelo',    type: 'text',   required: true,  filterable: true },
@@ -43,6 +46,7 @@ export const COLLECTIONS = {
     id: 'autosf1',
     label: 'Autos F1',
     owner: 'Franco',
+    icon: Flag,
     fields: [
       { key: 'team',      label: 'Equipo',    type: 'text',   required: true,  filterable: true, filterType: 'dynamic' },
       { key: 'driver',    label: 'Piloto',    type: 'text',   required: true,  filterable: true, filterType: 'dynamic' },
@@ -63,6 +67,7 @@ export const COLLECTIONS = {
     id: 'monedas',
     label: 'Monedas',
     owner: 'Franco',
+    icon: Coins,
     fields: [
       { key: 'country',     label: 'País',         type: 'text',   required: true,  filterable: true },
       { key: 'year',        label: 'Año',          type: 'number', required: true,  filterable: true },

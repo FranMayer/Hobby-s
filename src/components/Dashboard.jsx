@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, ChevronRight } from 'lucide-react';
 import { getAll, migrateFromLocalStorage, restoreBackup } from '../data/store';
 import { exportAll } from '../data/csv';
 import { COLLECTIONS } from '../data/collections';
 
 const EMPTY = { vinilos: [], camaras: [], autosf1: [], monedas: [] };
+const OWNERS = Object.entries(Object.groupBy(Object.values(COLLECTIONS), c => c.owner));
 
 export default function Dashboard({ onNavigate }) {
   const [all, setAll] = useState(EMPTY);
@@ -47,23 +48,11 @@ export default function Dashboard({ onNavigate }) {
   const stats = Object.fromEntries(
     Object.entries(all).map(([id, items]) => [
       id,
-      { total: items.length, owned: items.filter(i => !i.wishlist).length, wishlist: items.filter(i => i.wishlist).length },
+      { owned: items.filter(i => !i.wishlist).length, wishlist: items.filter(i => i.wishlist).length },
     ])
   );
 
   const totalWishlist = Object.values(stats).reduce((s, v) => s + v.wishlist, 0);
-
-  const byOwner = { Ayelen: ['vinilos', 'camaras'], Franco: ['autosf1', 'monedas'] };
-
-  const ownerStats = Object.fromEntries(
-    Object.entries(byOwner).map(([owner, ids]) => [
-      owner,
-      {
-        owned:    ids.reduce((s, id) => s + (stats[id]?.owned ?? 0), 0),
-        wishlist: ids.reduce((s, id) => s + (stats[id]?.wishlist ?? 0), 0),
-      },
-    ])
-  );
 
   if (loading || error) {
     return (
@@ -75,38 +64,15 @@ export default function Dashboard({ onNavigate }) {
 
   return (
     <div>
-      {/* Hero */}
-      <div style={{ marginBottom: 'var(--space-2xl)', paddingBottom: 'var(--space-2xl)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
+      <div className="dash-top">
         <div>
           {migrationMsg && (
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em', color: migrationMsg.startsWith('[ERROR') ? 'var(--accent)' : 'var(--success)', marginBottom: 8 }}>
+            <div className="dash-note" style={{ color: migrationMsg.startsWith('[ERROR') ? 'var(--accent)' : 'var(--success)' }}>
               {migrationMsg}
             </div>
           )}
-          <div style={{ display: 'flex', gap: 'var(--space-2xl)', flexWrap: 'wrap' }}>
-            {Object.entries(ownerStats).map(([owner, s]) => (
-              <div key={owner}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-disabled)', marginBottom: 4 }}>
-                  {owner}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 96, lineHeight: 1, letterSpacing: '-0.03em', color: 'var(--text-display)' }}>
-                    {s.owned}
-                  </span>
-                  {s.wishlist > 0 && (
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--warning)' }}>
-                      +{s.wishlist}
-                    </span>
-                  )}
-                </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-disabled)', marginTop: 4 }}>
-                  items
-                </div>
-              </div>
-            ))}
-          </div>
           {totalWishlist > 0 && (
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--warning)', marginTop: 8 }}>
+            <div className="dash-note" style={{ color: 'var(--warning)' }}>
               {totalWishlist} deseados en total
             </div>
           )}
@@ -122,69 +88,45 @@ export default function Dashboard({ onNavigate }) {
         </div>
       </div>
 
-      {/* Collection cards */}
-      <div className="hero-grid">
-        {Object.values(COLLECTIONS).map(col => {
-          const s = stats[col.id] ?? { owned: 0, wishlist: 0 };
+      <div className="owner-grid">
+        {OWNERS.map(([owner, cols]) => {
+          const owned = cols.reduce((s, c) => s + stats[c.id].owned, 0);
+          const wishlist = cols.reduce((s, c) => s + stats[c.id].wishlist, 0);
           return (
-            <div key={col.id} className="hero-card" style={{ cursor: 'pointer' }} onClick={() => onNavigate(col.id)}>
+            <section key={owner} className="owner-panel">
               <div className="dot-bg" />
-              <div style={{ position: 'relative' }}>
-                <div className="hero-card-owner">{col.owner}</div>
-                <div className="hero-card-label">{col.label}</div>
-                <div className="hero-card-number">{s.owned}</div>
-                {s.wishlist > 0
-                  ? <div className="hero-card-sub" style={{ color: 'var(--warning)' }}>+ {s.wishlist} deseados</div>
-                  : <div className="hero-card-sub">Ver colección →</div>
-                }
-              </div>
-            </div>
-          );
-        })}
-      </div>
+              <header className="owner-head">
+                <span className="owner-name">{owner}</span>
+                <div className="owner-total">
+                  <span className="owner-number">{owned}</span>
+                  <span className="owner-unit">items</span>
+                  {wishlist > 0 && <span className="owner-wish">+{wishlist} deseados</span>}
+                </div>
+              </header>
 
-      {/* Per-owner breakdown */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)', marginTop: 'var(--space-2xl)' }}>
-        {Object.entries(byOwner).map(([owner, ids]) => {
-          const ownerOwned = ids.reduce((s, id) => s + (stats[id]?.owned ?? 0), 0);
-          const ownerWishlist = ids.reduce((s, id) => s + (stats[id]?.wishlist ?? 0), 0);
-          return (
-            <div key={owner} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-lg)' }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-disabled)', marginBottom: 4 }}>
-                {owner}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 'var(--space-md)' }}>
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: 40, lineHeight: 1, color: 'var(--text-display)' }}>
-                  {ownerOwned}
-                </span>
-                {ownerWishlist > 0 && (
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--warning)' }}>
-                    +{ownerWishlist}
-                  </span>
-                )}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 'var(--space-md)' }}>
-                {ids.map(id => {
-                  const c = COLLECTIONS[id];
-                  const s = stats[id] ?? { owned: 0, wishlist: 0 };
-                  const pct = ownerOwned > 0 ? Math.round((s.owned / ownerOwned) * 100) : 0;
+              <div className="owner-cols">
+                {cols.map(col => {
+                  const s = stats[col.id];
+                  const pct = owned > 0 ? Math.round((s.owned / owned) * 100) : 0;
                   return (
-                    <div key={id}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>
-                          {c.label}
+                    <button key={col.id} className="col-row" onClick={() => onNavigate(col.id)}>
+                      <span className="col-icon"><col.icon size={18} strokeWidth={1.5} aria-hidden="true" /></span>
+                      <span className="col-info">
+                        <span className="col-top">
+                          <span className="col-label">{col.label}</span>
+                          <span className="col-count">
+                            {s.owned}
+                            {s.wishlist > 0 && <span className="owner-wish">+{s.wishlist}</span>}
+                          </span>
                         </span>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-display)' }}>
-                          {s.owned}
-                          {s.wishlist > 0 && <span style={{ color: 'var(--warning)', marginLeft: 4 }}>+{s.wishlist}</span>}
-                        </span>
-                      </div>
-                      <SegBar pct={pct} />
-                    </div>
+                        <SegBar pct={pct} />
+                      </span>
+                      <ChevronRight size={14} className="col-arrow" aria-hidden="true" />
+                    </button>
                   );
                 })}
               </div>
-            </div>
+            </section>
           );
         })}
       </div>
@@ -196,10 +138,10 @@ function SegBar({ pct }) {
   const total = 20;
   const filled = Math.round((pct / 100) * total);
   return (
-    <div style={{ display: 'flex', gap: 2 }}>
+    <span style={{ display: 'flex', gap: 2 }}>
       {Array.from({ length: total }).map((_, i) => (
-        <div key={i} style={{ flex: 1, height: 4, background: i < filled ? 'var(--text-display)' : 'var(--border-visible)' }} />
+        <span key={i} style={{ flex: 1, height: 4, background: i < filled ? 'var(--text-display)' : 'var(--border-visible)' }} />
       ))}
-    </div>
+    </span>
   );
 }

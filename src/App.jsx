@@ -8,7 +8,7 @@ import { COLLECTIONS } from './data/collections';
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
-  ...Object.values(COLLECTIONS).map(c => ({ id: c.id, label: c.label })),
+  ...Object.values(COLLECTIONS).map(c => ({ id: c.id, label: c.label, icon: c.icon })),
 ];
 
 export default function App() {
@@ -38,6 +38,7 @@ export default function App() {
               className={`nav-tab${tab === t.id ? ' active' : ''}`}
               onClick={() => setTab(t.id)}
             >
+              {t.icon && <t.icon size={13} strokeWidth={1.75} aria-hidden="true" />}
               {t.label}
             </button>
           ))}
