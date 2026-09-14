@@ -35,7 +35,7 @@ export default function Dashboard({ onNavigate }) {
     e.target.value = '';
     if (!file) return;
     try {
-      const count = await restoreBackup(JSON.parse((await file.text()).replace(/^﻿/, '')));
+      const count = await restoreBackup(JSON.parse((await file.text()).replace(/^\uFEFF/, '')));
       setAll(await getAll());
       setMigrationMsg(`[${count} ITEMS RESTAURADOS]`);
     } catch {

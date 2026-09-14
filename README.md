@@ -1,16 +1,45 @@
-# React + Vite
+# HobbyCount
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Colecciones de Ayelen (vinilos, cámaras) y Franco (autos F1 a escala, monedas).
 
-Currently, two official plugins are available:
+App: https://hobby-s.vercel.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+- React + Vite, desplegado en Vercel (cada push a `main` publica)
+- Supabase: una tabla por colección, login con email y contraseña, RLS solo para usuarios logueados
+- GitHub Actions: `supabase-keepalive.yml` consulta la base a diario para que el plan gratis no se pause
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Desarrollo
 
-## Expanding the ESLint configuration
+```bash
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Crear `.env.local` con:
+
+```
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+```
+
+## Base de datos
+
+`supabase-setup.sql` crea las tablas y las políticas. Correrlo en Supabase → SQL Editor.
+
+## Usuarios
+
+Los registros desde la app están cerrados. Para agregar a alguien:
+Supabase → Authentication → Users → Add user → Create new user (marcar *Auto Confirm User*).
+
+Para cambiar una contraseña olvidada: borrar el usuario y crearlo de nuevo con el mismo email (los datos no dependen del usuario).
+
+## Backups
+
+El plan gratis de Supabase no guarda copias. Desde el Dashboard:
+
+- **Exportar Todo** descarga un `.json` con las 4 colecciones.
+- **Restaurar** vuelve a cargarlo (actualiza por id, no duplica).
+
+Si la app aparece vacía o con error de conexión: revisar primero que el proyecto de Supabase no esté pausado y que el workflow de keep-alive siga activo en la pestaña Actions.

@@ -13,33 +13,37 @@ export default function Login() {
     setError(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (error) setError('[ERROR: NO SE PUDO INGRESAR]');
+    if (error) setError('[ERROR: EMAIL O CONTRASEÑA INVÁLIDOS]');
   }
 
   return (
-    <div className="modal-backdrop">
-      <form className="modal" style={{ maxWidth: 380 }} onSubmit={handleSubmit}>
-        <div className="modal-header">
-          <span className="modal-title">HobbyCount — Ingresar</span>
+    <div className="login">
+      <form className="login-card" onSubmit={handleSubmit}>
+        <div>
+          <span className="login-dot" aria-hidden="true" />
+          <h1 className="login-brand">HOBBYCOUNT</h1>
+          <p className="login-sub">Ayelen &amp; Franco — Colecciones</p>
         </div>
-        <div className="modal-body">
-          <div className="field">
-            <label className="field-label" htmlFor="login-email">Email</label>
-            <input id="login-email" className="field-input" type="email" autoComplete="email" required
-              value={email} onChange={e => setEmail(e.target.value)} />
-          </div>
-          <div className="field">
-            <label className="field-label" htmlFor="login-password">Contraseña</label>
-            <input id="login-password" className="field-input" type="password" autoComplete="current-password" required
-              value={password} onChange={e => setPassword(e.target.value)} />
-          </div>
+
+        <div className="field">
+          <label className="field-label" htmlFor="login-email">Email</label>
+          <input id="login-email" className="login-input" type="email" autoComplete="email" required
+            placeholder="tu@email.com" value={email} onChange={e => setEmail(e.target.value)} />
         </div>
-        <div className="modal-footer">
-          {error && <span className="inline-status error">{error}</span>}
-          <button className="btn btn-primary btn-sm" type="submit" disabled={busy}>
-            {busy ? 'Ingresando...' : 'Ingresar'}
-          </button>
+
+        <div className="field">
+          <label className="field-label" htmlFor="login-password">Contraseña</label>
+          <input id="login-password" className="login-input" type="password" autoComplete="current-password" required
+            placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
         </div>
+
+        {error && <span className="inline-status error" role="alert">{error}</span>}
+
+        <button className="btn btn-primary" type="submit" disabled={busy}>
+          {busy ? 'Ingresando...' : 'Ingresar'}
+        </button>
+
+        <p className="login-foot">[ Acceso privado ]</p>
       </form>
     </div>
   );

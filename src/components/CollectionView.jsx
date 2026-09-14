@@ -37,18 +37,24 @@ export default function CollectionView({ collectionId }) {
     setTimeout(() => setImportStatus(null), 3000);
   }
 
+  const load = () => getCollection(collectionId).then(applySort);
+
+  // loading solo arranca en true (key={tab} remonta por colección); los refresh posteriores no parpadean
   async function refresh() {
-    setLoading(true);
     try {
-      setItems(applySort(await getCollection(collectionId)));
+      setItems(await load());
     } catch {
       setImportStatus('[ERROR: SIN CONEXIÓN A LA BASE]');
-    } finally {
-      setLoading(false);
     }
   }
 
-  useEffect(() => { refresh(); }, [collectionId]);
+  useEffect(() => {
+    load()
+      .then(setItems)
+      .catch(() => setImportStatus('[ERROR: SIN CONEXIÓN A LA BASE]'))
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo recargar al cambiar de colección
+  }, [collectionId]);
 
   async function handleDelete(id) {
     if (!window.confirm('¿Eliminar este item?')) return;
