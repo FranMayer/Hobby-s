@@ -32,10 +32,17 @@ export default function CollectionView({ collectionId }) {
     });
   }
 
+  function showError(msg) {
+    setImportStatus(msg);
+    setTimeout(() => setImportStatus(null), 3000);
+  }
+
   async function refresh() {
     setLoading(true);
     try {
       setItems(applySort(await getCollection(collectionId)));
+    } catch {
+      setImportStatus('[ERROR: SIN CONEXIÓN A LA BASE]');
     } finally {
       setLoading(false);
     }
@@ -45,13 +52,21 @@ export default function CollectionView({ collectionId }) {
 
   async function handleDelete(id) {
     if (!window.confirm('¿Eliminar este item?')) return;
-    await deleteItem(collectionId, id);
-    refresh();
+    try {
+      await deleteItem(collectionId, id);
+      refresh();
+    } catch {
+      showError('[ERROR: NO SE PUDO ELIMINAR]');
+    }
   }
 
   async function handleWishlistToggle(item) {
-    await updateItem(collectionId, item.id, { wishlist: !item.wishlist });
-    refresh();
+    try {
+      await updateItem(collectionId, item.id, { wishlist: !item.wishlist });
+      refresh();
+    } catch {
+      showError('[ERROR: NO SE PUDO GUARDAR]');
+    }
   }
 
   function handleExport() {

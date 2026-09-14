@@ -46,7 +46,7 @@ export default function App() {
           Ayelen &amp; Franco — Colecciones
         </span>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-disabled)' }}>
-          Datos guardados localmente
+          Sincronizado en la nube
         </span>
       </footer>
     </div>

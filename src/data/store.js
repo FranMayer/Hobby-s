@@ -3,13 +3,15 @@ import { supabase } from './supabase';
 const MIGRATED_KEY = 'hobbycount_migrated_v1';
 const COLLECTIONS_IDS = ['vinilos', 'camaras', 'autosf1', 'monedas'];
 
+const META_KEYS = ['id', 'createdAt', 'updatedAt', 'importedAt', 'created_at', 'updated_at'];
+
+// Solo normaliza los campos presentes: un patch parcial (ej. { wishlist }) no pisa el resto.
 function cleanPayload(item) {
-  const { id, createdAt, updatedAt, importedAt, created_at, updated_at, ...rest } = item;
-  return {
-    ...rest,
-    wishlist: rest.wishlist === true,
-    year: rest.year ? parseInt(rest.year, 10) : null,
-  };
+  const rest = { ...item };
+  for (const k of META_KEYS) delete rest[k];
+  if ('wishlist' in rest) rest.wishlist = rest.wishlist === true;
+  if ('year' in rest) rest.year = rest.year ? parseInt(rest.year, 10) : null;
+  return rest;
 }
 
 export async function getAll() {
@@ -18,6 +20,8 @@ export async function getAll() {
       supabase.from(id).select('*').order('created_at', { ascending: false })
     )
   );
+  const failed = results.find(r => r.error);
+  if (failed) throw failed.error;
   return Object.fromEntries(
     COLLECTIONS_IDS.map((id, i) => [id, results[i].data ?? []])
   );
@@ -82,9 +86,9 @@ export async function migrateFromLocalStorage() {
       .select('*', { count: 'exact', head: true });
     if (count > 0) continue;
 
-    const payload = items.map(({ id: _id, createdAt, updatedAt, importedAt, ...rest }) => ({
-      ...cleanPayload(rest),
-      created_at: createdAt ?? new Date().toISOString(),
+    const payload = items.map(item => ({
+      ...cleanPayload(item),
+      created_at: item.createdAt ?? new Date().toISOString(),
     }));
 
     const { error } = await supabase.from(id).insert(payload);

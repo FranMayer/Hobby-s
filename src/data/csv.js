@@ -9,14 +9,10 @@ function escapeCell(val) {
 }
 
 function toCSV(fields, items) {
-  const headers = fields.map(f => f.key);
-  const headerRow = [...headers, 'wishlist', 'notes', 'createdAt'].join(',');
-  const rows = items.map(item =>
-    [...headers, 'wishlist', 'notes', 'createdAt']
-      .map(k => escapeCell(item[k]))
-      .join(',')
-  );
-  return [headerRow, ...rows].join('\n');
+  // notes ya viene dentro de fields
+  const keys = [...fields.map(f => f.key), 'wishlist', 'created_at'];
+  const rows = items.map(item => keys.map(k => escapeCell(item[k])).join(','));
+  return [keys.join(','), ...rows].join('\n');
 }
 
 function downloadFile(filename, content, mime = 'text/csv;charset=utf-8;') {

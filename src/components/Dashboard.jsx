@@ -10,16 +10,22 @@ export default function Dashboard({ onNavigate }) {
   const [all, setAll] = useState(EMPTY);
   const [loading, setLoading] = useState(true);
   const [migrationMsg, setMigrationMsg] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function init() {
-      const result = await migrateFromLocalStorage();
-      if (result.migrated) {
-        setMigrationMsg(`[${result.count} ITEMS MIGRADOS DESDE CACHÉ LOCAL]`);
-        setTimeout(() => setMigrationMsg(null), 5000);
+      try {
+        const result = await migrateFromLocalStorage();
+        if (result.migrated) {
+          setMigrationMsg(`[${result.count} ITEMS MIGRADOS DESDE CACHÉ LOCAL]`);
+          setTimeout(() => setMigrationMsg(null), 5000);
+        }
+        setAll(await getAll());
+      } catch {
+        setError('[ERROR: SIN CONEXIÓN A LA BASE DE DATOS]');
+      } finally {
+        setLoading(false);
       }
-      setAll(await getAll());
-      setLoading(false);
     }
     init();
   }, []);
@@ -45,10 +51,10 @@ export default function Dashboard({ onNavigate }) {
     ])
   );
 
-  if (loading) {
+  if (loading || error) {
     return (
-      <div style={{ padding: 'var(--space-3xl) 0', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.08em', color: 'var(--text-disabled)' }}>
-        [CARGANDO...]
+      <div style={{ padding: 'var(--space-3xl) 0', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.08em', color: error ? 'var(--accent)' : 'var(--text-disabled)' }}>
+        {error ?? '[CARGANDO...]'}
       </div>
     );
   }
