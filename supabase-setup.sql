@@ -65,8 +65,21 @@ create table if not exists monedas (
   updated_at  timestamptz
 );
 
--- Uso personal sin auth: deshabilitar RLS
-alter table vinilos  disable row level security;
-alter table camaras  disable row level security;
-alter table autosf1  disable row level security;
-alter table monedas  disable row level security;
+-- Solo usuarios logueados pueden leer y escribir.
+-- Antes de correr esto:
+--   1. Authentication → Sign In / Providers → desactivar "Allow new users to sign up"
+--   2. Authentication → Users → crear a mano las cuentas de Franco y Ayelen
+alter table vinilos  enable row level security;
+alter table camaras  enable row level security;
+alter table autosf1  enable row level security;
+alter table monedas  enable row level security;
+
+drop policy if exists "solo logueados" on vinilos;
+drop policy if exists "solo logueados" on camaras;
+drop policy if exists "solo logueados" on autosf1;
+drop policy if exists "solo logueados" on monedas;
+
+create policy "solo logueados" on vinilos for all to authenticated using (true) with check (true);
+create policy "solo logueados" on camaras for all to authenticated using (true) with check (true);
+create policy "solo logueados" on autosf1 for all to authenticated using (true) with check (true);
+create policy "solo logueados" on monedas for all to authenticated using (true) with check (true);

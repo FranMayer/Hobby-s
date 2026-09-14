@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Download } from 'lucide-react';
-import { getAll, migrateFromLocalStorage } from '../data/store';
+import { Download, Upload } from 'lucide-react';
+import { getAll, migrateFromLocalStorage, restoreBackup } from '../data/store';
 import { exportAll } from '../data/csv';
 import { COLLECTIONS } from '../data/collections';
 
@@ -29,6 +29,20 @@ export default function Dashboard({ onNavigate }) {
     }
     init();
   }, []);
+
+  async function handleRestore(e) {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const count = await restoreBackup(JSON.parse((await file.text()).replace(/^﻿/, '')));
+      setAll(await getAll());
+      setMigrationMsg(`[${count} ITEMS RESTAURADOS]`);
+    } catch {
+      setMigrationMsg('[ERROR: BACKUP INVÁLIDO]');
+    }
+    setTimeout(() => setMigrationMsg(null), 5000);
+  }
 
   const stats = Object.fromEntries(
     Object.entries(all).map(([id, items]) => [
@@ -65,7 +79,7 @@ export default function Dashboard({ onNavigate }) {
       <div style={{ marginBottom: 'var(--space-2xl)', paddingBottom: 'var(--space-2xl)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
         <div>
           {migrationMsg && (
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em', color: 'var(--success)', marginBottom: 8 }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em', color: migrationMsg.startsWith('[ERROR') ? 'var(--accent)' : 'var(--success)', marginBottom: 8 }}>
               {migrationMsg}
             </div>
           )}
@@ -97,9 +111,15 @@ export default function Dashboard({ onNavigate }) {
             </div>
           )}
         </div>
-        <button className="btn btn-secondary btn-sm" onClick={() => exportAll(all)}>
-          <Download size={13} /> Exportar Todo
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <label className="btn btn-secondary btn-sm" title="Restaurar desde un backup .json">
+            <Upload size={13} /> Restaurar
+            <input type="file" accept=".json" hidden onChange={handleRestore} />
+          </label>
+          <button className="btn btn-secondary btn-sm" onClick={() => exportAll(all)}>
+            <Download size={13} /> Exportar Todo
+          </button>
+        </div>
       </div>
 
       {/* Collection cards */}

@@ -32,14 +32,10 @@ export function exportCollection(collectionId, items) {
   downloadFile(`hobbycount_${collectionId}_${date}.csv`, csv);
 }
 
+// Backup completo en JSON (con ids) para poder restaurarlo desde el Dashboard.
 export function exportAll(all) {
-  const sections = Object.entries(COLLECTIONS).map(([id, col]) => {
-    const items = all[id] ?? [];
-    const csv = toCSV(col.fields, items);
-    return `### ${col.label} (${col.owner})\n${csv}`;
-  });
   const date = new Date().toISOString().slice(0, 10);
-  downloadFile(`hobbycount_backup_${date}.csv`, sections.join('\n\n'));
+  downloadFile(`hobbycount_backup_${date}.json`, JSON.stringify(all, null, 2), 'application/json');
 }
 
 export function parseCSV(collectionId, text) {

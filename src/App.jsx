@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { LogOut } from 'lucide-react';
+import { supabase } from './data/supabase';
+import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import CollectionView from './components/CollectionView';
 import { COLLECTIONS } from './data/collections';
@@ -11,7 +14,18 @@ const TABS = [
 export default function App() {
   const [tab, setTab] = useState('dashboard');
 
+  const [session, setSession] = useState(undefined); // undefined = todavía verificando
+
+  useEffect(() => {
+    // onAuthStateChange emite INITIAL_SESSION al suscribirse, no hace falta getSession()
+    const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
+    return () => data.subscription.unsubscribe();
+  }, []);
+
   function navigateTo(id) { setTab(id); }
+
+  if (session === undefined) return null;
+  if (!session) return <Login />;
 
   return (
     <div className="app">
@@ -28,6 +42,9 @@ export default function App() {
             </button>
           ))}
         </div>
+        <button className="btn-icon" onClick={() => supabase.auth.signOut()} title="Salir" aria-label="Salir">
+          <LogOut size={14} />
+        </button>
       </nav>
 
       <main className="page">

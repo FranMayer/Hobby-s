@@ -66,6 +66,19 @@ export async function importItems(collectionId, parsedItems) {
   return data?.length ?? 0;
 }
 
+// Restaura un backup JSON de exportAll: upsert por id, así re-importar el mismo archivo no duplica.
+export async function restoreBackup(backup) {
+  let total = 0;
+  for (const id of COLLECTIONS_IDS) {
+    const rows = Array.isArray(backup?.[id]) ? backup[id] : [];
+    if (!rows.length) continue;
+    const { error } = await supabase.from(id).upsert(rows);
+    if (error) throw error;
+    total += rows.length;
+  }
+  return total;
+}
+
 // Migra datos de localStorage a Supabase la primera vez (solo si Supabase está vacío)
 export async function migrateFromLocalStorage() {
   if (localStorage.getItem(MIGRATED_KEY)) return { migrated: false };
